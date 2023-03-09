@@ -69,20 +69,24 @@ const Login = (props) => {
         isValid: undefined
     });
 
+    //TODO: прочитать про Алиасы при деструктуризации
+    const {isValid: emailIsValid} = emailState;
+    const {isValid: passwordIsValid} = passwordState;
 
-    // useEffect(() => {
-    //     const timer = setTimeout(()=> {
-    //         console.log('Effect function')
-    //
-    //         setFormIsValid(inputEmail.includes("@") && inputPassword.trim().length > 7);
-    //     }, 1000);
-    //
-    //     return () => {
-    //         console.log('Cleear timer');
-    //         clearTimeout(timer);
-    //     }
-    //
-    // }, [inputEmail, inputPassword]);
+    //useEffect будет запускаться только если изменится параметр isValid у состояний инпута пароля и емейла.
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            console.log('Effect function')
+
+            setFormIsValid(emailIsValid && passwordIsValid);
+        }, 1000);
+
+        return () => {
+            console.log('Cleear timer');
+            clearTimeout(timer);
+        }
+
+    }, [emailIsValid, passwordIsValid]); // я бы просто использовал [emailState.isValid, passwordState.isValid]
 
 
     const emailChangeHandler = (event) => {
@@ -90,13 +94,13 @@ const Login = (props) => {
         //{type:'USER_INPUT', value: event.target.value} --- action , действие
         dispatchEmailState({type: 'USER_INPUT', value: event.target.value});
 
-        setFormIsValid(event.target.value.includes('@') && passwordState.isValid);
+        // setFormIsValid(event.target.value.includes('@') && passwordState.isValid);
     };
 
     const passwordChangeHandler = (event) => {
-        // setInputPassword(event.target.value);
-        dispatchPasswordState({type:'USER_INPUT', value:event.target.value});
-        setFormIsValid(event.target.value.trim().length > 7 && emailState.isValid);
+        dispatchPasswordState({type: 'USER_INPUT', value: event.target.value});
+
+        // setFormIsValid(event.target.value.trim().length > 7 && emailState.isValid);
     };
 
     /**
@@ -107,7 +111,6 @@ const Login = (props) => {
     };
 
     const validatePasswordHandler = () => {
-        // setPasswordIsValid(inputPassword.trim().length > 7);
         dispatchPasswordState({type: 'INPUT_BLUR'});
     };
 
