@@ -1,8 +1,9 @@
-import React, {useState, useEffect, useReducer} from "react";
+import React, {useState, useEffect, useReducer, useContext} from "react";
 
 import Card from "../UI/Card/Card";
 import styles from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import AuthContext from "../../store/auth-context";
 
 // с помощью редюсера с кмобинируем валидацию поля и его значение в 1 состояние.
 
@@ -46,7 +47,7 @@ const passwordReducer = (prevState, action) => {
     }
 }
 
-const Login = (props) => {
+const Login = () => {
     //useReducer нужен для комбинирования  в одно состояние, двух и более относящихся друг к другу состояний
 
     // const [inputEmail, setInputEmail] = useState("");
@@ -72,6 +73,8 @@ const Login = (props) => {
     //TODO: прочитать про Алиасы при деструктуризации
     const {isValid: emailIsValid} = emailState;
     const {isValid: passwordIsValid} = passwordState;
+
+    const ctx = useContext(AuthContext);
 
     //useEffect будет запускаться только если изменится параметр isValid у состояний инпута пароля и емейла.
     useEffect(() => {
@@ -116,7 +119,7 @@ const Login = (props) => {
 
     const submitHandler = (event) => {
         event.preventDefault();
-        props.onLogin(emailState.value, passwordState.value);
+        ctx.onLogin(emailState.value, passwordState.value);
     };
 
     return (
