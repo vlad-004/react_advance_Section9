@@ -31,10 +31,12 @@ function App() {
     return (
         <AuthContext.Provider
             value={{
-                isLoggedIn: isLoggedIn
-        }}>
+                isLoggedIn: isLoggedIn,
+                onLogout: logoutHandler,
+            }}>
             <MainHeader onLogout={logoutHandler}/>
             <main>
+                {/* тут я не убрал onLogin={loginHandler} в контекст так как внутри компонента используется этот props */}
                 {!isLoggedIn && <Login onLogin={loginHandler}/>}
                 {isLoggedIn && <Home onLogout={logoutHandler}/>}
             </main>
