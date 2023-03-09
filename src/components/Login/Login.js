@@ -1,50 +1,93 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useReducer} from "react";
 
 import Card from "../UI/Card/Card";
 import styles from "./Login.module.css";
 import Button from "../UI/Button/Button";
 
+// с помощью редюсера с кмобинируем валидацию поля и его значение в 1 состояние.
+
+// эта функция за пределами функции компонента, так как внутри функции редюсера не нужли какието данные которые генерятся внутри функции компонента Login
+// все что нужно в эту функцию будет передаваться возможностями реакта
+const emailReducer = (prevState, action) => {
+    if (action.type === 'USER_INPUT') {
+        return {
+            value: action.value,
+            isValid: action.value.includes('@'),
+        };
+    }
+    if (action.type === 'INPUT_BLUR') {
+        return {
+            value: prevState.value,
+            isValid: prevState.value.includes('@'),
+        }
+    }
+    return {
+        value: '',
+        isValid: false,
+    }
+}
+
 const Login = (props) => {
-    const [inputEmail, setInputEmail] = useState("");
-    const [emailIsValid, setEmailIsValid] = useState();
+    //useReducer нужен для комбинирования  в одно состояние, двух и более относящихся друг к другу состояний
+
+    // const [inputEmail, setInputEmail] = useState("");
+    // const [emailIsValid, setEmailIsValid] = useState();
+
     const [inputPassword, setInputPassword] = useState("");
     const [passwordIsValid, setPasswordIsValid] = useState();
+
     const [formIsValid, setFormIsValid] = useState(false);
 
-    useEffect(() => {
-        const timer = setTimeout(()=> {
-            console.log('Effect function')
 
-            setFormIsValid(inputEmail.includes("@") && inputPassword.trim().length > 7);
-        }, 1000);
+    // {value: '', isValid: false} это начальное состояние которые мы задаем для emailState
+    const [emailState, dispatchEmailState] = useReducer(emailReducer, {
+        value: '',
+        isValid: undefined
+    });
 
-        return () => {
-            console.log('Cleear timer');
-            clearTimeout(timer);
-        }
 
-    }, [inputEmail, inputPassword]);
+    // useEffect(() => {
+    //     const timer = setTimeout(()=> {
+    //         console.log('Effect function')
+    //
+    //         setFormIsValid(inputEmail.includes("@") && inputPassword.trim().length > 7);
+    //     }, 1000);
+    //
+    //     return () => {
+    //         console.log('Cleear timer');
+    //         clearTimeout(timer);
+    //     }
+    //
+    // }, [inputEmail, inputPassword]);
 
 
     const emailChangeHandler = (event) => {
-        setInputEmail(event.target.value);
+        // вызов dispatchEmailState приведет к вызову функции emailReducer
+        //{type:'USER_INPUT', value: event.target.value} --- action , действие
+        dispatchEmailState({type: 'USER_INPUT', value: event.target.value});
+
+        setFormIsValid(emailState.isValid && inputPassword.trim().length > 7);
     };
 
     const passwordChangeHandler = (event) => {
         setInputPassword(event.target.value);
+        setFormIsValid(event.target.value.trim().length > 7 && emailState.isValid);
     };
 
+    /**
+     * Валидируем емейл когда инпут теряет фокус
+     */
     const validateEmailHandler = () => {
-        setEmailIsValid(inputEmail.includes("@"));
+        dispatchEmailState({type: 'INPUT_BLUR'});
     };
 
     const validatePasswordHandler = () => {
-        setPasswordIsValid(inputPassword.trim().length > 6);
+        setPasswordIsValid(inputPassword.trim().length > 7);
     };
 
     const submitHandler = (event) => {
         event.preventDefault();
-        props.onLogin(inputEmail, inputPassword);
+        props.onLogin(emailState.value, inputPassword);
     };
 
     return (
@@ -52,14 +95,14 @@ const Login = (props) => {
             <form onSubmit={submitHandler}>
                 <div
                     className={`${styles.control} ${
-                        emailIsValid === false ? styles.invalid : ""
+                        emailState.isValid === false ? styles.invalid : ""
                     }`}
                 >
                     <label htmlFor="email">Email</label>
                     <input
                         type="email"
                         id="email"
-                        value={inputEmail}
+                        value={emailState.value}
                         onChange={emailChangeHandler}
                         onBlur={validateEmailHandler}
                     />
