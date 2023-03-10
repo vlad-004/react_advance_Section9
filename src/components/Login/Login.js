@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useReducer, useContext} from "react";
+import React, {useState, useEffect, useReducer, useContext, useRef} from "react";
 
 import Card from "../UI/Card/Card";
 import styles from "./Login.module.css";
@@ -77,6 +77,9 @@ const Login = () => {
 
     const ctx = useContext(AuthContext);
 
+    const emailInputRef = useRef();
+    const passwordInputRef = useRef();
+
     //useEffect будет запускаться только если изменится параметр isValid у состояний инпута пароля и емейла.
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -116,13 +119,24 @@ const Login = () => {
 
     const submitHandler = (event) => {
         event.preventDefault();
-        ctx.onLogin(emailState.value, passwordState.value);
+        //Это условие пишем для того если при сабмите формы одно из полей невалидно чтобы фокус и курсор встал на тот инпут где валидация не прошла
+
+        if (formIsValid) {
+            ctx.onLogin(emailState.value, passwordState.value);
+        } else if (!emailIsValid) {
+            //так как емейл по порядку первое поле то его и проверяем перед паролем
+            emailInputRef.current.focus();
+        } else {
+            //сюда попадаем если не валиден пароль
+            passwordInputRef.current.focus();
+        }
     };
 
     return (
         <Card className={styles.login}>
             <form onSubmit={submitHandler}>
                 <Input
+                    ref={emailInputRef}
                     id={'email'}
                     label={'Email'}
                     type={'email'}
@@ -132,6 +146,7 @@ const Login = () => {
                     onBlur={validateEmailHandler}
                 />
                 <Input
+                    ref={passwordInputRef}
                     id={'password'}
                     label={'password'}
                     type={'password'}
@@ -142,7 +157,7 @@ const Login = () => {
                 />
 
                 <div className={styles.actions}>
-                    <Button type="submit" className={styles.btn} disabled={!formIsValid}>
+                    <Button type="submit" className={styles.btn} >
                         Вход
                     </Button>
                 </div>
